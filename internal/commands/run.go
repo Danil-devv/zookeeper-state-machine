@@ -3,12 +3,12 @@ package commands
 import (
 	"context"
 	"fmt"
-	"log/slog"
-	"strings"
-
 	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands/cmdargs"
 	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/depgraph"
 	"github.com/spf13/cobra"
+	"log/slog"
+	"strings"
+	"time"
 )
 
 func InitRunCommand(ctx context.Context) (cobra.Command, error) {
@@ -42,7 +42,47 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&(cmdArgs.ZookeeperServers), "zk-servers", "s", []string{}, "Set the zookeeper servers.")
+	setCmdArgs(&cmd, &cmdArgs)
 
 	return cmd, nil
+}
+
+func setCmdArgs(cmd *cobra.Command, cmdArgs *cmdargs.RunArgs) {
+	cmd.Flags().StringSliceVarP(
+		&(cmdArgs.ZookeeperServers),
+		"zk-servers",
+		"s",
+		[]string{},
+		"Set the zookeeper servers.",
+	)
+	cmdArgs.LeaderTimeout = *cmd.Flags().Duration(
+		"leader-timeout",
+		10*time.Second,
+		"Sets the frequency at which the leader writes the file to disk.",
+	)
+	cmdArgs.AttempterTimeout = *cmd.Flags().Duration(
+		"attempter-timeout",
+		2*time.Second,
+		"Sets the frequency with which the attempter tries to become a leader.",
+	)
+	cmdArgs.FailoverTimeout = *cmd.Flags().Duration(
+		"failover-timeout",
+		1*time.Second,
+		"Sets the frequency with which the failover tries to resume its work.",
+	)
+	cmdArgs.FileDir = *cmd.Flags().String(
+		"file-dir",
+		"/tmp/election",
+		"Sets the directory where the leader must write files.",
+	)
+	cmdArgs.StorageCapacity = *cmd.Flags().Int(
+		"storage-capacity",
+		10,
+		"Sets the maximum number of files in the file-dir directory.",
+	)
+	cmdArgs.FailoverAttemptsCount = *cmd.Flags().Int(
+		"attempts-count",
+		10,
+		"Sets the maximum number of failover attempts",
+	)
 }
