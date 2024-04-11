@@ -20,8 +20,6 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 		and starts to try to acquire leadership by creation of ephemeral node`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dg := depgraph.New()
-			zkConn, err := dg.GetZkConn(cmdArgs.ZookeeperServers)
-			_ = zkConn
 			logger, err := dg.GetLogger()
 			if err != nil {
 				return fmt.Errorf("get logger: %w", err)
@@ -32,12 +30,11 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("get runner: %w", err)
 			}
-			firstState, err := dg.GetEmptyState()
+			initState, err := dg.GetInitState(&cmdArgs)
 			if err != nil {
 				return fmt.Errorf("get first state: %w", err)
 			}
-			cmd.SetContext(ctx)
-			err = runner.Run(cmd.Context(), firstState)
+			err = runner.Run(ctx, initState)
 			if err != nil {
 				return fmt.Errorf("run states: %w", err)
 			}

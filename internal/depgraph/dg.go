@@ -2,15 +2,14 @@ package depgraph
 
 import (
 	"fmt"
+	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands/cmdargs"
+	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run"
+	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/empty"
 	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/init"
+	"github.com/go-zookeeper/zk"
 	"log/slog"
 	"os"
 	"sync"
-	"time"
-
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/empty"
-	"github.com/go-zookeeper/zk"
 )
 
 type dgEntity[T any] struct {
@@ -73,9 +72,16 @@ func (dg *DepGraph) GetRunner() (run.Runner, error) {
 	})
 }
 
-func (dg *DepGraph) GetZkConn(servers []string) (*zk.Conn, error) {
-	return dg.zkConn.get(func() (*zk.Conn, error) {
-		conn, _, err := zk.Connect(servers, 3*time.Second)
-		return conn, err
+func (dg *DepGraph) GetInitState(args *cmdargs.RunArgs) (*init.State, error) {
+	return dg.initState.get(func() (*init.State, error) {
+		logger, err := dg.GetLogger()
+		if err != nil {
+			return nil, fmt.Errorf("get logger: %w", err)
+		}
+		state, err := init.New(logger, args)
+		if err != nil {
+			return nil, err
+		}
+		return state, nil
 	})
 }
