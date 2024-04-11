@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -8,7 +9,9 @@ import (
 )
 
 func main() {
-	rootCmd, err := commands.InitRunCommand()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	rootCmd, err := commands.InitRunCommand(ctx)
 	if err != nil {
 		fmt.Println("init run command: %w", err)
 		os.Exit(1)

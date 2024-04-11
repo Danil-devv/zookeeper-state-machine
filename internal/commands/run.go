@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func InitRunCommand() (cobra.Command, error) {
+func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 	cmdArgs := cmdargs.RunArgs{}
 	cmd := cobra.Command{
 		Use:   "run",
@@ -19,7 +20,8 @@ func InitRunCommand() (cobra.Command, error) {
 		and starts to try to acquire leadership by creation of ephemeral node`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dg := depgraph.New()
-			// zkConn, err := dg.GetZkConn()
+			zkConn, err := dg.GetZkConn(cmdArgs.ZookeeperServers)
+			_ = zkConn
 			logger, err := dg.GetLogger()
 			if err != nil {
 				return fmt.Errorf("get logger: %w", err)
@@ -34,6 +36,7 @@ func InitRunCommand() (cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("get first state: %w", err)
 			}
+			cmd.SetContext(ctx)
 			err = runner.Run(cmd.Context(), firstState)
 			if err != nil {
 				return fmt.Errorf("run states: %w", err)
