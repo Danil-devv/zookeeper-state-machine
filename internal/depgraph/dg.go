@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands/cmdargs"
 	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/empty"
 	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/init"
 	"github.com/go-zookeeper/zk"
 	"log/slog"
@@ -31,7 +30,6 @@ func (e *dgEntity[T]) get(init func() (T, error)) (T, error) {
 type DepGraph struct {
 	logger      *dgEntity[*slog.Logger]
 	stateRunner *dgEntity[*run.LoopRunner]
-	emptyState  *dgEntity[*empty.State]
 	initState   *dgEntity[*init.State]
 	zkConn      *dgEntity[*zk.Conn]
 }
@@ -40,7 +38,6 @@ func New() *DepGraph {
 	return &DepGraph{
 		logger:      &dgEntity[*slog.Logger]{},
 		stateRunner: &dgEntity[*run.LoopRunner]{},
-		emptyState:  &dgEntity[*empty.State]{},
 		initState:   &dgEntity[*init.State]{},
 		zkConn:      &dgEntity[*zk.Conn]{},
 	}
@@ -49,16 +46,6 @@ func New() *DepGraph {
 func (dg *DepGraph) GetLogger() (*slog.Logger, error) {
 	return dg.logger.get(func() (*slog.Logger, error) {
 		return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{})), nil
-	})
-}
-
-func (dg *DepGraph) GetEmptyState() (*empty.State, error) {
-	return dg.emptyState.get(func() (*empty.State, error) {
-		logger, err := dg.GetLogger()
-		if err != nil {
-			return nil, fmt.Errorf("get logger: %w", err)
-		}
-		return empty.New(logger), nil
 	})
 }
 
