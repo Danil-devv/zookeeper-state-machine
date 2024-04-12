@@ -2,17 +2,11 @@ package failover
 
 import (
 	"context"
-	"errors"
 	"github.com/go-zookeeper/zk"
 	"hw/internal/commands/cmdargs"
-	"hw/internal/usecases/run/states"
-	"hw/internal/usecases/run/states/stopping"
+	"hw/internal/usecases/run/states/number"
 	"log/slog"
 	"time"
-)
-
-var (
-	tryRestartError = errors.New("trying to restart")
 )
 
 func New(log *slog.Logger, args *cmdargs.RunArgs, conn *zk.Conn) *State {
@@ -29,24 +23,37 @@ type State struct {
 	args   *cmdargs.RunArgs
 }
 
+func (s *State) GetConn() *zk.Conn {
+	return s.conn
+}
+
+func (s *State) GetLogger() *slog.Logger {
+	return s.logger
+}
+
+func (s *State) GetArgs() *cmdargs.RunArgs {
+	return s.args
+}
+
 func (s *State) String() string {
 	return "FailoverState"
 }
 
-func (s *State) Run(ctx context.Context) (states.AutomataState, error) {
+func (s *State) Run(ctx context.Context) (number.State, error) {
 	s.logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
 	ticker := time.NewTicker(s.args.FailoverTimeout)
 	for i := 0; i < s.args.FailoverAttemptsCount; i++ {
 		select {
 		case <-ticker.C:
-			_, _, err := zk.Connect(s.args.ZookeeperServers, 3*time.Second)
+			conn, _, err := zk.Connect(s.args.ZookeeperServers, 3*time.Second)
 			if err != nil {
 				continue
 			}
-			return nil, nil
+			s.conn = conn
+			return number.INIT, nil
 		case <-ctx.Done():
-			return stopping.New(s.logger, s.args, s.conn), nil
+			return number.STOPPING, nil
 		}
 	}
-	return stopping.New(s.logger, s.args, s.conn), nil
+	return number.STOPPING, nil
 }

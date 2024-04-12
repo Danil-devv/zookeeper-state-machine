@@ -52,7 +52,7 @@ func setCmdArgs(cmd *cobra.Command, cmdArgs *cmdargs.RunArgs) {
 		&(cmdArgs.ZookeeperServers),
 		"zk-servers",
 		"s",
-		[]string{":2181", ":2182", ":2183"},
+		[]string{"zoo1:2181", "zoo2:2182", "zoo3:2183"},
 		"Set the zookeeper servers.",
 	)
 	cmdArgs.LeaderTimeout = *cmd.Flags().Duration(

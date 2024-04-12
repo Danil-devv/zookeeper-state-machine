@@ -7,9 +7,7 @@ import (
 	"github.com/go-zookeeper/zk"
 	"github.com/google/uuid"
 	"hw/internal/commands/cmdargs"
-	"hw/internal/usecases/run/states"
-	"hw/internal/usecases/run/states/failover"
-	"hw/internal/usecases/run/states/stopping"
+	"hw/internal/usecases/run/states/number"
 	"log/slog"
 	"path"
 	"time"
@@ -31,11 +29,23 @@ type State struct {
 	uuid   string
 }
 
+func (s *State) GetConn() *zk.Conn {
+	return s.conn
+}
+
+func (s *State) GetLogger() *slog.Logger {
+	return s.logger
+}
+
+func (s *State) GetArgs() *cmdargs.RunArgs {
+	return s.args
+}
+
 func (s *State) String() string {
 	return "LeaderState"
 }
 
-func (s *State) Run(ctx context.Context) (states.AutomataState, error) {
+func (s *State) Run(ctx context.Context) (number.State, error) {
 	s.logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
 	ticker := time.NewTicker(s.args.LeaderTimeout)
 	for {
@@ -43,18 +53,18 @@ func (s *State) Run(ctx context.Context) (states.AutomataState, error) {
 		case <-ticker.C:
 			exists, stat, err := s.conn.Exists(s.args.FileDir)
 			if err != nil {
-				return failover.New(s.logger, s.args, s.conn), nil
+				return number.FAILOVER, nil
 			}
 
 			if exists && int(stat.NumChildren) >= s.args.StorageCapacity {
 				childrens, _, err := s.conn.Children(s.args.FileDir)
 				if err != nil {
-					return failover.New(s.logger, s.args, s.conn), nil
+					return number.FAILOVER, nil
 				}
 				for i := 0; len(childrens)-i >= s.args.StorageCapacity; i++ {
 					err = s.conn.Delete(path.Join(s.args.FileDir, childrens[i]), stat.Version)
 					if err != nil {
-						return failover.New(s.logger, s.args, s.conn), nil
+						return number.FAILOVER, nil
 					}
 				}
 			}
@@ -62,7 +72,7 @@ func (s *State) Run(ctx context.Context) (states.AutomataState, error) {
 			if !exists {
 				_, err = s.conn.Create(s.args.FileDir, []byte("Leader file directory"), 0, zk.WorldACL(zk.PermAll))
 				if err != nil {
-					return failover.New(s.logger, s.args, s.conn), nil
+					return number.FAILOVER, nil
 				}
 			}
 
@@ -70,7 +80,7 @@ func (s *State) Run(ctx context.Context) (states.AutomataState, error) {
 			_, err = s.conn.Create(path.Join(s.args.FileDir, filename), data, 0, zk.WorldACL(zk.PermAll))
 
 		case <-ctx.Done():
-			return stopping.New(s.logger, s.args, s.conn), nil
+			return number.STOPPING, nil
 		}
 	}
 }

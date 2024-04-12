@@ -4,26 +4,16 @@ import (
 	"context"
 	"github.com/go-zookeeper/zk"
 	"hw/internal/commands/cmdargs"
-	"hw/internal/usecases/run/states"
-	"hw/internal/usecases/run/states/attempter"
-	"hw/internal/usecases/run/states/stopping"
+	"hw/internal/usecases/run/states/number"
 	"log/slog"
-	"time"
 )
 
-func New(logger *slog.Logger, args *cmdargs.RunArgs) (*State, error) {
-	logger = logger.With("subsystem", "InitState")
-
-	conn, _, err := zk.Connect(args.ZookeeperServers, 3*time.Second)
-	if err != nil {
-		return nil, err
-	}
-
+func New(logger *slog.Logger, args *cmdargs.RunArgs, conn *zk.Conn) *State {
 	return &State{
 		logger: logger,
-		conn:   conn,
 		args:   args,
-	}, nil
+		conn:   conn,
+	}
 }
 
 type State struct {
@@ -32,14 +22,26 @@ type State struct {
 	args   *cmdargs.RunArgs
 }
 
+func (s *State) GetConn() *zk.Conn {
+	return s.conn
+}
+
+func (s *State) GetLogger() *slog.Logger {
+	return s.logger
+}
+
+func (s *State) GetArgs() *cmdargs.RunArgs {
+	return s.args
+}
+
 func (s *State) String() string {
 	return "InitState"
 }
 
-func (s *State) Run(ctx context.Context) (states.AutomataState, error) {
+func (s *State) Run(ctx context.Context) (number.State, error) {
 	s.logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
 	if ctx.Err() != nil {
-		return stopping.New(s.logger, s.args, s.conn), nil
+		return number.STOPPING, nil
 	}
-	return attempter.New(s.logger, s.args, s.conn), nil
+	return number.ATTEMPTER, nil
 }
