@@ -30,24 +30,56 @@ func (s *State) String() string {
 }
 
 func (s *State) Run(ctx context.Context) (number.State, error) {
-	s.Logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
+	s.Logger.LogAttrs(
+		ctx,
+		slog.LevelInfo,
+		"start writing files in zookeeper",
+		slog.String("state", s.String()),
+	)
 	ticker := time.NewTicker(s.Args.LeaderTimeout)
 	for {
 		select {
 		case <-ticker.C:
 			exists, stat, err := s.Conn.Exists(s.Args.FileDir)
 			if err != nil {
+				s.Logger.LogAttrs(
+					ctx,
+					slog.LevelError,
+					fmt.Sprintf("got an error while trying to check that dir %s is exists", s.Args.FileDir),
+					slog.String("errMsg", err.Error()),
+					slog.String("state", s.String()),
+				)
 				return number.FAILOVER, nil
 			}
 
 			if exists && int(stat.NumChildren) >= s.Args.StorageCapacity {
+				s.Logger.LogAttrs(
+					ctx,
+					slog.LevelInfo,
+					fmt.Sprintf("count of childrens exceed maximum, start cleaning dir %s", s.Args.FileDir),
+					slog.String("state", s.String()),
+				)
 				childrens, _, err := s.Conn.Children(s.Args.FileDir)
 				if err != nil {
+					s.Logger.LogAttrs(
+						ctx,
+						slog.LevelError,
+						"cannot get list of node's childrens",
+						slog.String("errMsg", err.Error()),
+						slog.String("state", s.String()),
+					)
 					return number.FAILOVER, nil
 				}
 				for i := 0; len(childrens)-i >= s.Args.StorageCapacity; i++ {
 					err = s.Conn.Delete(path.Join(s.Args.FileDir, childrens[i]), stat.Version)
 					if err != nil {
+						s.Logger.LogAttrs(
+							ctx,
+							slog.LevelError,
+							"cannot delete child node",
+							slog.String("errMsg", err.Error()),
+							slog.String("state", s.String()),
+						)
 						return number.FAILOVER, nil
 					}
 				}
@@ -56,12 +88,38 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 			if !exists {
 				_, err = s.Conn.Create(s.Args.FileDir, []byte("Leader file directory"), 0, zk.WorldACL(zk.PermAll))
 				if err != nil {
+					s.Logger.LogAttrs(
+						ctx,
+						slog.LevelError,
+						fmt.Sprintf("cannot create working directory %s", s.Args.FileDir),
+						slog.String("errMsg", err.Error()),
+						slog.String("state", s.String()),
+					)
 					return number.FAILOVER, nil
 				}
 			}
 
 			filename, data := s.CreateRandomFile()
+			s.Logger.LogAttrs(
+				ctx,
+				slog.LevelInfo,
+				"generate random file",
+				slog.String("filename", filename),
+				slog.String("data", string(data)),
+				slog.String("state", s.String()),
+			)
 			_, err = s.Conn.Create(path.Join(s.Args.FileDir, filename), data, 0, zk.WorldACL(zk.PermAll))
+			if err != nil {
+				s.Logger.LogAttrs(
+					ctx,
+					slog.LevelError,
+					fmt.Sprintf("cannot create file %s", path.Join(s.Args.FileDir, filename)),
+					slog.String("data", string(data)),
+					slog.String("errMsg", err.Error()),
+					slog.String("state", s.String()),
+				)
+				return number.FAILOVER, nil
+			}
 
 		case <-ctx.Done():
 			return number.STOPPING, nil
