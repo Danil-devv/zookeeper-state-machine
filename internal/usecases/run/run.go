@@ -34,7 +34,13 @@ type LoopRunner struct {
 
 func (r *LoopRunner) Run(ctx context.Context, state states.AutomataState, b *basic.State) error {
 	for state != nil {
-		r.logger.LogAttrs(ctx, slog.LevelInfo, "start running state", slog.String("state", state.String()))
+		r.logger.LogAttrs(
+			ctx,
+			slog.LevelInfo,
+			"start running state",
+			slog.String("state", state.String()),
+		)
+
 		var err error
 		state, err = processState(ctx, state, b)
 		if err != nil {

@@ -22,9 +22,20 @@ func (s *State) String() string {
 }
 
 func (s *State) Run(ctx context.Context) (number.State, error) {
-	s.Logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
 	if ctx.Err() != nil {
+		s.Logger.LogAttrs(
+			ctx,
+			slog.LevelError,
+			"context received an error, stopping",
+			slog.String("state", s.String()),
+		)
 		return number.STOPPING, nil
 	}
+	s.Logger.LogAttrs(
+		ctx,
+		slog.LevelInfo,
+		"switching to the next state",
+		slog.String("state", s.String()),
+	)
 	return number.ATTEMPTER, nil
 }
