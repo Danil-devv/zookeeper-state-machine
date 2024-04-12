@@ -2,36 +2,19 @@ package stopping
 
 import (
 	"context"
-	"github.com/go-zookeeper/zk"
-	"hw/internal/commands/cmdargs"
+	"hw/internal/usecases/run/states/basic"
 	"hw/internal/usecases/run/states/number"
 	"log/slog"
 )
 
-func New(log *slog.Logger, args *cmdargs.RunArgs, conn *zk.Conn) *State {
+func New(state *basic.State) *State {
 	return &State{
-		logger: log,
-		args:   args,
-		conn:   conn,
+		State: state,
 	}
 }
 
 type State struct {
-	logger *slog.Logger
-	conn   *zk.Conn
-	args   *cmdargs.RunArgs
-}
-
-func (s *State) GetConn() *zk.Conn {
-	return s.conn
-}
-
-func (s *State) GetLogger() *slog.Logger {
-	return s.logger
-}
-
-func (s *State) GetArgs() *cmdargs.RunArgs {
-	return s.args
+	*basic.State
 }
 
 func (s *State) String() string {
@@ -39,7 +22,7 @@ func (s *State) String() string {
 }
 
 func (s *State) Run(ctx context.Context) (number.State, error) {
-	s.logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
-	s.conn.Close()
+	s.Logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
+	s.Conn.Close()
 	return number.EXIT, nil
 }

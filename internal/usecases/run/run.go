@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hw/internal/usecases/run/states/attempter"
+	"hw/internal/usecases/run/states/basic"
 	"hw/internal/usecases/run/states/failover"
 	initstate "hw/internal/usecases/run/states/init"
 	"hw/internal/usecases/run/states/leader"
@@ -17,7 +18,7 @@ import (
 var _ Runner = &LoopRunner{}
 
 type Runner interface {
-	Run(ctx context.Context, state states.AutomataState) error
+	Run(ctx context.Context, state states.AutomataState, b *basic.State) error
 }
 
 func NewLoopRunner(logger *slog.Logger) *LoopRunner {
@@ -31,11 +32,11 @@ type LoopRunner struct {
 	logger *slog.Logger
 }
 
-func (r *LoopRunner) Run(ctx context.Context, state states.AutomataState) error {
+func (r *LoopRunner) Run(ctx context.Context, state states.AutomataState, b *basic.State) error {
 	for state != nil {
 		r.logger.LogAttrs(ctx, slog.LevelInfo, "start running state", slog.String("state", state.String()))
 		var err error
-		state, err = processState(ctx, state)
+		state, err = processState(ctx, state, b)
 		if err != nil {
 			return fmt.Errorf("state %s run: %w", state.String(), err)
 		}
@@ -44,7 +45,7 @@ func (r *LoopRunner) Run(ctx context.Context, state states.AutomataState) error 
 	return nil
 }
 
-func processState(ctx context.Context, state states.AutomataState) (states.AutomataState, error) {
+func processState(ctx context.Context, state states.AutomataState, b *basic.State) (states.AutomataState, error) {
 	n, err := state.Run(ctx)
 	if err != nil {
 		return nil, err
@@ -52,15 +53,15 @@ func processState(ctx context.Context, state states.AutomataState) (states.Autom
 
 	switch n {
 	case number.INIT:
-		state = initstate.New(state.GetLogger(), state.GetArgs(), state.GetConn())
+		state = initstate.New(b)
 	case number.STOPPING:
-		state = stopping.New(state.GetLogger(), state.GetArgs(), state.GetConn())
+		state = stopping.New(b)
 	case number.FAILOVER:
-		state = failover.New(state.GetLogger(), state.GetArgs(), state.GetConn())
+		state = failover.New(b)
 	case number.ATTEMPTER:
-		state = attempter.New(state.GetLogger(), state.GetArgs(), state.GetConn())
+		state = attempter.New(b)
 	case number.LEADER:
-		state = leader.New(state.GetLogger(), state.GetArgs(), state.GetConn())
+		state = leader.New(b)
 	case number.EXIT:
 		state = nil
 	}

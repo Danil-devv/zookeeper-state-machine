@@ -6,39 +6,23 @@ import (
 	"github.com/Pallinder/go-randomdata"
 	"github.com/go-zookeeper/zk"
 	"github.com/google/uuid"
-	"hw/internal/commands/cmdargs"
+	"hw/internal/usecases/run/states/basic"
 	"hw/internal/usecases/run/states/number"
 	"log/slog"
 	"path"
 	"time"
 )
 
-func New(log *slog.Logger, args *cmdargs.RunArgs, conn *zk.Conn) *State {
+func New(state *basic.State) *State {
 	return &State{
-		logger: log,
-		args:   args,
-		conn:   conn,
-		uuid:   uuid.NewString(),
+		State: state,
+		uuid:  uuid.NewString(),
 	}
 }
 
 type State struct {
-	logger *slog.Logger
-	conn   *zk.Conn
-	args   *cmdargs.RunArgs
-	uuid   string
-}
-
-func (s *State) GetConn() *zk.Conn {
-	return s.conn
-}
-
-func (s *State) GetLogger() *slog.Logger {
-	return s.logger
-}
-
-func (s *State) GetArgs() *cmdargs.RunArgs {
-	return s.args
+	*basic.State
+	uuid string
 }
 
 func (s *State) String() string {
@@ -46,23 +30,23 @@ func (s *State) String() string {
 }
 
 func (s *State) Run(ctx context.Context) (number.State, error) {
-	s.logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
-	ticker := time.NewTicker(s.args.LeaderTimeout)
+	s.Logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
+	ticker := time.NewTicker(s.Args.LeaderTimeout)
 	for {
 		select {
 		case <-ticker.C:
-			exists, stat, err := s.conn.Exists(s.args.FileDir)
+			exists, stat, err := s.Conn.Exists(s.Args.FileDir)
 			if err != nil {
 				return number.FAILOVER, nil
 			}
 
-			if exists && int(stat.NumChildren) >= s.args.StorageCapacity {
-				childrens, _, err := s.conn.Children(s.args.FileDir)
+			if exists && int(stat.NumChildren) >= s.Args.StorageCapacity {
+				childrens, _, err := s.Conn.Children(s.Args.FileDir)
 				if err != nil {
 					return number.FAILOVER, nil
 				}
-				for i := 0; len(childrens)-i >= s.args.StorageCapacity; i++ {
-					err = s.conn.Delete(path.Join(s.args.FileDir, childrens[i]), stat.Version)
+				for i := 0; len(childrens)-i >= s.Args.StorageCapacity; i++ {
+					err = s.Conn.Delete(path.Join(s.Args.FileDir, childrens[i]), stat.Version)
 					if err != nil {
 						return number.FAILOVER, nil
 					}
@@ -70,14 +54,14 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 			}
 
 			if !exists {
-				_, err = s.conn.Create(s.args.FileDir, []byte("Leader file directory"), 0, zk.WorldACL(zk.PermAll))
+				_, err = s.Conn.Create(s.Args.FileDir, []byte("Leader file directory"), 0, zk.WorldACL(zk.PermAll))
 				if err != nil {
 					return number.FAILOVER, nil
 				}
 			}
 
 			filename, data := s.CreateRandomFile()
-			_, err = s.conn.Create(path.Join(s.args.FileDir, filename), data, 0, zk.WorldACL(zk.PermAll))
+			_, err = s.Conn.Create(path.Join(s.Args.FileDir, filename), data, 0, zk.WorldACL(zk.PermAll))
 
 		case <-ctx.Done():
 			return number.STOPPING, nil

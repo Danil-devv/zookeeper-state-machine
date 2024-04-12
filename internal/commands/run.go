@@ -24,17 +24,38 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("get logger: %w", err)
 			}
-			logger.Info("args received", slog.String("servers", strings.Join(cmdArgs.ZookeeperServers, ", ")))
+			logger.Info(
+				"args received",
+				slog.String("servers", strings.Join(cmdArgs.ZookeeperServers, ", ")),
+				slog.Duration("leader-timeout", cmdArgs.LeaderTimeout),
+				slog.Duration("attempter-timeout", cmdArgs.AttempterTimeout),
+				slog.Duration("failover-timeout", cmdArgs.AttempterTimeout),
+				slog.String("filedir", cmdArgs.FileDir),
+				slog.Int("storage-capacity", cmdArgs.StorageCapacity),
+				slog.Int("failover-attempts-count", cmdArgs.FailoverAttemptsCount),
+			)
 
 			runner, err := dg.GetRunner()
 			if err != nil {
 				return fmt.Errorf("get runner: %w", err)
 			}
-			initState, err := dg.GetInitState(&cmdArgs)
+
+			conn, err := dg.GetZkConn(&cmdArgs)
+			if err != nil {
+				return fmt.Errorf("get runner: %w", err)
+			}
+
+			b, err := dg.GetBasicState(conn, &cmdArgs, logger)
+			if err != nil {
+				return fmt.Errorf("get runner: %w", err)
+			}
+
+			initState, err := dg.GetInitState(b)
 			if err != nil {
 				return fmt.Errorf("get first state: %w", err)
 			}
-			err = runner.Run(ctx, initState)
+
+			err = runner.Run(ctx, initState, b)
 			if err != nil {
 				return fmt.Errorf("run states: %w", err)
 			}

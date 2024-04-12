@@ -5,6 +5,7 @@ import (
 	"github.com/go-zookeeper/zk"
 	"hw/internal/commands/cmdargs"
 	"hw/internal/usecases/run"
+	"hw/internal/usecases/run/states/basic"
 	initstate "hw/internal/usecases/run/states/init"
 	"log/slog"
 	"os"
@@ -33,6 +34,7 @@ type DepGraph struct {
 	stateRunner *dgEntity[*run.LoopRunner]
 	initState   *dgEntity[*initstate.State]
 	zkConn      *dgEntity[*zk.Conn]
+	basicState  *dgEntity[*basic.State]
 }
 
 func New() *DepGraph {
@@ -41,6 +43,7 @@ func New() *DepGraph {
 		stateRunner: &dgEntity[*run.LoopRunner]{},
 		initState:   &dgEntity[*initstate.State]{},
 		zkConn:      &dgEntity[*zk.Conn]{},
+		basicState:  &dgEntity[*basic.State]{},
 	}
 }
 
@@ -70,16 +73,14 @@ func (dg *DepGraph) GetZkConn(args *cmdargs.RunArgs) (*zk.Conn, error) {
 	})
 }
 
-func (dg *DepGraph) GetInitState(args *cmdargs.RunArgs) (*initstate.State, error) {
+func (dg *DepGraph) GetInitState(state *basic.State) (*initstate.State, error) {
 	return dg.initState.get(func() (*initstate.State, error) {
-		logger, err := dg.GetLogger()
-		if err != nil {
-			return nil, fmt.Errorf("get logger: %w", err)
-		}
-		conn, err := dg.GetZkConn(args)
-		if err != nil {
-			return nil, fmt.Errorf("get logger: %w", err)
-		}
-		return initstate.New(logger, args, conn), nil
+		return initstate.New(state), nil
+	})
+}
+
+func (dg *DepGraph) GetBasicState(conn *zk.Conn, args *cmdargs.RunArgs, l *slog.Logger) (*basic.State, error) {
+	return dg.basicState.get(func() (*basic.State, error) {
+		return &basic.State{Logger: l, Args: args, Conn: conn}, nil
 	})
 }
