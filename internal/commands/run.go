@@ -3,9 +3,9 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands/cmdargs"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/depgraph"
 	"github.com/spf13/cobra"
+	"hw/internal/commands/cmdargs"
+	"hw/internal/depgraph"
 	"log/slog"
 	"strings"
 	"time"
@@ -52,7 +52,7 @@ func setCmdArgs(cmd *cobra.Command, cmdArgs *cmdargs.RunArgs) {
 		&(cmdArgs.ZookeeperServers),
 		"zk-servers",
 		"s",
-		[]string{},
+		[]string{":2181", ":2182", ":2183"},
 		"Set the zookeeper servers.",
 	)
 	cmdArgs.LeaderTimeout = *cmd.Flags().Duration(

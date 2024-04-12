@@ -2,13 +2,17 @@ package failover
 
 import (
 	"context"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands/cmdargs"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/init"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/stopping"
+	"errors"
 	"github.com/go-zookeeper/zk"
+	"hw/internal/commands/cmdargs"
+	"hw/internal/usecases/run/states"
+	"hw/internal/usecases/run/states/stopping"
 	"log/slog"
 	"time"
+)
+
+var (
+	tryRestartError = errors.New("trying to restart")
 )
 
 func New(log *slog.Logger, args *cmdargs.RunArgs, conn *zk.Conn) *State {
@@ -35,11 +39,11 @@ func (s *State) Run(ctx context.Context) (states.AutomataState, error) {
 	for i := 0; i < s.args.FailoverAttemptsCount; i++ {
 		select {
 		case <-ticker.C:
-			state, err := init.New(s.logger, s.args)
+			_, _, err := zk.Connect(s.args.ZookeeperServers, 3*time.Second)
 			if err != nil {
 				continue
 			}
-			return state, nil
+			return nil, nil
 		case <-ctx.Done():
 			return stopping.New(s.logger, s.args, s.conn), nil
 		}

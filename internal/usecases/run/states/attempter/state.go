@@ -2,12 +2,12 @@ package attempter
 
 import (
 	"context"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands/cmdargs"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/failover"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/leader"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/stopping"
 	"github.com/go-zookeeper/zk"
+	"hw/internal/commands/cmdargs"
+	"hw/internal/usecases/run/states"
+	"hw/internal/usecases/run/states/failover"
+	"hw/internal/usecases/run/states/leader"
+	"hw/internal/usecases/run/states/stopping"
 	"log/slog"
 	"time"
 )

@@ -1,4 +1,4 @@
-module github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election
+module hw
 
 go 1.22.0
 

@@ -2,10 +2,10 @@ package depgraph
 
 import (
 	"fmt"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands/cmdargs"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run"
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states/init"
 	"github.com/go-zookeeper/zk"
+	"hw/internal/commands/cmdargs"
+	"hw/internal/usecases/run"
+	initialization "hw/internal/usecases/run/states/init"
 	"log/slog"
 	"os"
 	"sync"
@@ -30,7 +30,7 @@ func (e *dgEntity[T]) get(init func() (T, error)) (T, error) {
 type DepGraph struct {
 	logger      *dgEntity[*slog.Logger]
 	stateRunner *dgEntity[*run.LoopRunner]
-	initState   *dgEntity[*init.State]
+	initState   *dgEntity[*initialization.State]
 	zkConn      *dgEntity[*zk.Conn]
 }
 
@@ -38,7 +38,7 @@ func New() *DepGraph {
 	return &DepGraph{
 		logger:      &dgEntity[*slog.Logger]{},
 		stateRunner: &dgEntity[*run.LoopRunner]{},
-		initState:   &dgEntity[*init.State]{},
+		initState:   &dgEntity[*initialization.State]{},
 		zkConn:      &dgEntity[*zk.Conn]{},
 	}
 }
@@ -59,13 +59,13 @@ func (dg *DepGraph) GetRunner() (run.Runner, error) {
 	})
 }
 
-func (dg *DepGraph) GetInitState(args *cmdargs.RunArgs) (*init.State, error) {
-	return dg.initState.get(func() (*init.State, error) {
+func (dg *DepGraph) GetInitState(args *cmdargs.RunArgs) (*initialization.State, error) {
+	return dg.initState.get(func() (*initialization.State, error) {
 		logger, err := dg.GetLogger()
 		if err != nil {
 			return nil, fmt.Errorf("get logger: %w", err)
 		}
-		state, err := init.New(logger, args)
+		state, err := initialization.New(logger, args)
 		if err != nil {
 			return nil, err
 		}

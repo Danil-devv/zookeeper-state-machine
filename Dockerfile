@@ -16,4 +16,3 @@ COPY --from=build /app/build/* /opt/
 
 ENTRYPOINT [ "/opt/election" ]
 CMD [ "run" ]
-

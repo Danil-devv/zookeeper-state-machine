@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/commands"
+	"hw/internal/commands"
 )
 
 func main() {

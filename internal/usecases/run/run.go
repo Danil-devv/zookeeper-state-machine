@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/central-university-dev/2024-spring-go-course-lesson8-leader-election/internal/usecases/run/states"
+	"hw/internal/usecases/run/states"
 )
 
 var _ Runner = &LoopRunner{}
