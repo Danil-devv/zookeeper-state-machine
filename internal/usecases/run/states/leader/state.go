@@ -52,6 +52,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 				return number.FAILOVER, nil
 			}
 
+			// TODO: удаляется рандомный ребенок, а не самый старый
 			if exists && int(stat.NumChildren) >= s.Args.StorageCapacity {
 				s.Logger.LogAttrs(
 					ctx,

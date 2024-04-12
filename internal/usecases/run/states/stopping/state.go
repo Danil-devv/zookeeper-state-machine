@@ -22,7 +22,12 @@ func (s *State) String() string {
 }
 
 func (s *State) Run(ctx context.Context) (number.State, error) {
-	s.Logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
+	s.Logger.LogAttrs(
+		ctx,
+		slog.LevelInfo,
+		"closing connection",
+		slog.String("state", s.String()),
+	)
 	s.Conn.Close()
 	return number.EXIT, nil
 }

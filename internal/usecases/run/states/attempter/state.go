@@ -39,6 +39,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 				)
 				return number.FAILOVER, nil
 			}
+
 			if exists {
 				s.Logger.LogAttrs(
 					ctx,
@@ -48,6 +49,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 				)
 				continue
 			}
+
 			_, err = s.Conn.Create("/leader", []byte("test"), zk.FlagEphemeral, zk.WorldACL(zk.PermAll))
 			if err != nil {
 				s.Logger.LogAttrs(
@@ -67,12 +69,6 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 			)
 			return number.LEADER, nil
 		case <-ctx.Done():
-			s.Logger.LogAttrs(
-				ctx,
-				slog.LevelError,
-				"context received an error, stopping",
-				slog.String("state", s.String()),
-			)
 			return number.STOPPING, nil
 		}
 	}

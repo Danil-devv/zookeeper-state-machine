@@ -24,15 +24,33 @@ func (s *State) String() string {
 }
 
 func (s *State) Run(ctx context.Context) (number.State, error) {
-	s.Logger.LogAttrs(ctx, slog.LevelInfo, "Nothing happened")
 	ticker := time.NewTicker(s.Args.FailoverTimeout)
 	for i := 0; i < s.Args.FailoverAttemptsCount; i++ {
 		select {
 		case <-ticker.C:
+			s.Logger.LogAttrs(
+				ctx,
+				slog.LevelInfo,
+				"trying reconnect to zookeeper",
+				slog.String("state", s.String()),
+			)
 			conn, _, err := zk.Connect(s.Args.ZookeeperServers, 3*time.Second)
 			if err != nil {
+				s.Logger.LogAttrs(
+					ctx,
+					slog.LevelError,
+					"cannot reconnect to zookeeper",
+					slog.String("errMsg", err.Error()),
+					slog.String("state", s.String()),
+				)
 				continue
 			}
+			s.Logger.LogAttrs(
+				ctx,
+				slog.LevelInfo,
+				"successfully reconnected to zookeeper",
+				slog.String("state", s.String()),
+			)
 			s.Conn = conn
 			return number.INIT, nil
 		case <-ctx.Done():

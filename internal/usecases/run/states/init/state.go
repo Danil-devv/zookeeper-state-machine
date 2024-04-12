@@ -29,8 +29,10 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 			"context received an error, stopping",
 			slog.String("state", s.String()),
 		)
+
 		return number.STOPPING, nil
 	}
+
 	s.Logger.LogAttrs(
 		ctx,
 		slog.LevelInfo,
