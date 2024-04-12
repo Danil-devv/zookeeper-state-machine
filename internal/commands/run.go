@@ -39,22 +39,27 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("get runner: %w", err)
 			}
+			logger.Debug("successfully get runner")
 
 			conn, err := dg.GetZkConn(&cmdArgs)
 			if err != nil {
 				return fmt.Errorf("get runner: %w", err)
 			}
+			logger.Debug("successfully connected to zookeeper")
 
 			b, err := dg.GetBasicState(conn, &cmdArgs, logger)
 			if err != nil {
 				return fmt.Errorf("get runner: %w", err)
 			}
+			logger.Debug("successfully get basic state")
 
 			initState, err := dg.GetInitState(b)
 			if err != nil {
 				return fmt.Errorf("get first state: %w", err)
 			}
+			logger.Debug("successfully get init state")
 
+			logger.Info("starting state machine")
 			err = runner.Run(ctx, initState, b)
 			if err != nil {
 				return fmt.Errorf("run states: %w", err)
