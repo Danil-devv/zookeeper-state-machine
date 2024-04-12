@@ -81,6 +81,6 @@ func (dg *DepGraph) GetInitState(state *basic.State) (*initstate.State, error) {
 
 func (dg *DepGraph) GetBasicState(conn *zk.Conn, args *cmdargs.RunArgs, l *slog.Logger) (*basic.State, error) {
 	return dg.basicState.get(func() (*basic.State, error) {
-		return &basic.State{Logger: l, Args: args, Conn: conn}, nil
+		return basic.New(l, args, conn), nil
 	})
 }
