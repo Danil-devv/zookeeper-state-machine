@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"hw/internal/commands/cmdargs"
+	"hw/internal/config"
 	"hw/internal/depgraph"
 	"log/slog"
 	"strings"
-	"time"
 )
 
 func InitRunCommand(ctx context.Context) (cobra.Command, error) {
@@ -74,41 +74,42 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 }
 
 func setCmdArgs(cmd *cobra.Command, cmdArgs *cmdargs.RunArgs) {
+	conf := config.GetEnvConfig()
 	cmd.Flags().StringSliceVarP(
 		&(cmdArgs.ZookeeperServers),
 		"zk-servers",
 		"s",
-		[]string{"zoo1:2181", "zoo2:2182", "zoo3:2183"},
+		conf.ZookeeperServers,
 		"Set the zookeeper servers.",
 	)
 	cmdArgs.LeaderTimeout = *cmd.Flags().Duration(
 		"leader-timeout",
-		10*time.Second,
+		conf.LeaderTimeout,
 		"Sets the frequency at which the leader writes the file to disk.",
 	)
 	cmdArgs.AttempterTimeout = *cmd.Flags().Duration(
 		"attempter-timeout",
-		2*time.Second,
+		conf.AttempterTimeout,
 		"Sets the frequency with which the attempter tries to become a leader.",
 	)
 	cmdArgs.FailoverTimeout = *cmd.Flags().Duration(
 		"failover-timeout",
-		1*time.Second,
+		conf.FailoverTimeout,
 		"Sets the frequency with which the failover tries to resume its work.",
 	)
 	cmdArgs.FileDir = *cmd.Flags().String(
 		"file-dir",
-		"/tmp/election",
+		conf.FileDir,
 		"Sets the directory where the leader must write files.",
 	)
 	cmdArgs.StorageCapacity = *cmd.Flags().Int(
 		"storage-capacity",
-		10,
+		conf.StorageCapacity,
 		"Sets the maximum number of files in the file-dir directory.",
 	)
 	cmdArgs.FailoverAttemptsCount = *cmd.Flags().Int(
 		"attempts-count",
-		10,
+		conf.FailoverAttemptsCount,
 		"Sets the maximum number of failover attempts",
 	)
 }
