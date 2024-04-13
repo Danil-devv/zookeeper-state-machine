@@ -43,19 +43,19 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 
 			conn, err := dg.GetZkConn(&cmdArgs)
 			if err != nil {
-				return fmt.Errorf("get runner: %w", err)
+				return fmt.Errorf("get zk connection: %w", err)
 			}
-			logger.Debug("successfully get runner")
+			logger.Debug("successfully get zk connection")
 
 			b, err := dg.GetBasicState(&cmdArgs, logger, conn)
 			if err != nil {
-				return fmt.Errorf("get runner: %w", err)
+				return fmt.Errorf("get basic state: %w", err)
 			}
 			logger.Debug("successfully get basic state")
 
 			initState, err := dg.GetInitState(b)
 			if err != nil {
-				return fmt.Errorf("get first state: %w", err)
+				return fmt.Errorf("get init state: %w", err)
 			}
 			logger.Debug("successfully get init state")
 

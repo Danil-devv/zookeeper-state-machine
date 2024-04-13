@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	eg, _ := errgroup.WithContext(context.Background())
+	eg := errgroup.Group{}
 	ctx, cancel := context.WithCancel(context.Background())
 
 	errCh := make(chan os.Signal, 1)

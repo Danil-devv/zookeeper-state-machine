@@ -11,5 +11,6 @@ type ZkConn interface {
 	Children(path string) ([]string, *zk.Stat, error)
 	Exists(path string) (bool, *zk.Stat, error)
 	Reconnect(servers []string, timeout time.Duration) error
+	CheckConnection() bool
 	Close()
 }

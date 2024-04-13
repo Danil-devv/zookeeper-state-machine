@@ -100,7 +100,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 				}
 			}
 
-			filename, data := s.createRandomFile()
+			filename, data := s.generateRandomFile()
 			s.Logger.LogAttrs(
 				ctx,
 				slog.LevelInfo,
@@ -128,7 +128,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 	}
 }
 
-func (s *State) createRandomFile() (name string, data []byte) {
+func (s *State) generateRandomFile() (name string, data []byte) {
 	name = randomdata.Alphanumeric(10)
 	data = []byte(fmt.Sprintf("UUID: %s\nText: %s", s.uuid, randomdata.Paragraph()))
 	return

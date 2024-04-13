@@ -26,6 +26,14 @@ func (c *Conn) Reconnect(servers []string, timeout time.Duration) error {
 	return nil
 }
 
+func (c *Conn) CheckConnection() bool {
+	_, _, err := c.Exists("/")
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func connect(servers []string, timeout time.Duration) (*zk.Conn, error) {
 	conn, _, err := zk.Connect(servers, timeout)
 	return conn, err

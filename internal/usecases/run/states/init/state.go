@@ -31,11 +31,14 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 
 		return basic.STOPPING, nil
 	}
-	s.Logger.LogAttrs(
-		ctx,
-		slog.LevelInfo,
-		"switching to the next state",
-		slog.String("state", s.String()),
-	)
+	if !s.Conn.CheckConnection() {
+		s.Logger.LogAttrs(
+			ctx,
+			slog.LevelError,
+			"connection failed",
+			slog.String("state", s.String()),
+		)
+		return basic.FAILOVER, nil
+	}
 	return basic.ATTEMPTER, nil
 }
