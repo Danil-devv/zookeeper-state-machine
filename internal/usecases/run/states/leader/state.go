@@ -7,7 +7,6 @@ import (
 	"github.com/go-zookeeper/zk"
 	"github.com/google/uuid"
 	"hw/internal/usecases/run/states/basic"
-	"hw/internal/usecases/run/states/number"
 	"log/slog"
 	"path"
 	"strings"
@@ -30,7 +29,7 @@ func (s *State) String() string {
 	return "LeaderState"
 }
 
-func (s *State) Run(ctx context.Context) (number.State, error) {
+func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 	s.Logger.LogAttrs(
 		ctx,
 		slog.LevelInfo,
@@ -50,7 +49,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 					slog.String("errMsg", err.Error()),
 					slog.String("state", s.String()),
 				)
-				return number.FAILOVER, nil
+				return basic.FAILOVER, nil
 			}
 
 			// TODO: удаляется рандомный ребенок, а не самый старый
@@ -70,7 +69,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 						slog.String("errMsg", err.Error()),
 						slog.String("state", s.String()),
 					)
-					return number.FAILOVER, nil
+					return basic.FAILOVER, nil
 				}
 				for i := 0; len(childrens)-i >= s.Args.StorageCapacity; i++ {
 					err = s.Conn.Delete(path.Join(s.Args.FileDir, childrens[i]), stat.Version)
@@ -82,7 +81,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 							slog.String("errMsg", err.Error()),
 							slog.String("state", s.String()),
 						)
-						return number.FAILOVER, nil
+						return basic.FAILOVER, nil
 					}
 				}
 			}
@@ -97,11 +96,11 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 						slog.String("errMsg", err.Error()),
 						slog.String("state", s.String()),
 					)
-					return number.FAILOVER, nil
+					return basic.FAILOVER, nil
 				}
 			}
 
-			filename, data := s.CreateRandomFile()
+			filename, data := s.createRandomFile()
 			s.Logger.LogAttrs(
 				ctx,
 				slog.LevelInfo,
@@ -120,16 +119,16 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 					slog.String("errMsg", err.Error()),
 					slog.String("state", s.String()),
 				)
-				return number.FAILOVER, nil
+				return basic.FAILOVER, nil
 			}
 
 		case <-ctx.Done():
-			return number.STOPPING, nil
+			return basic.STOPPING, nil
 		}
 	}
 }
 
-func (s *State) CreateRandomFile() (name string, data []byte) {
+func (s *State) createRandomFile() (name string, data []byte) {
 	name = randomdata.Alphanumeric(10)
 	data = []byte(fmt.Sprintf("UUID: %s\nText: %s", s.uuid, randomdata.Paragraph()))
 	return

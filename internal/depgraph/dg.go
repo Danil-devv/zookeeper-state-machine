@@ -2,7 +2,7 @@ package depgraph
 
 import (
 	"fmt"
-	"github.com/go-zookeeper/zk"
+	"hw/internal/adapters/zookeeper"
 	"hw/internal/commands/cmdargs"
 	"hw/internal/usecases/run"
 	"hw/internal/usecases/run/states/basic"
@@ -33,7 +33,7 @@ type DepGraph struct {
 	logger      *dgEntity[*slog.Logger]
 	stateRunner *dgEntity[*run.LoopRunner]
 	initState   *dgEntity[*initstate.State]
-	zkConn      *dgEntity[*zk.Conn]
+	zkConn      *dgEntity[*zookeeper.Conn]
 	basicState  *dgEntity[*basic.State]
 }
 
@@ -42,7 +42,7 @@ func New() *DepGraph {
 		logger:      &dgEntity[*slog.Logger]{},
 		stateRunner: &dgEntity[*run.LoopRunner]{},
 		initState:   &dgEntity[*initstate.State]{},
-		zkConn:      &dgEntity[*zk.Conn]{},
+		zkConn:      &dgEntity[*zookeeper.Conn]{},
 		basicState:  &dgEntity[*basic.State]{},
 	}
 }
@@ -63,9 +63,9 @@ func (dg *DepGraph) GetRunner() (run.Runner, error) {
 	})
 }
 
-func (dg *DepGraph) GetZkConn(args *cmdargs.RunArgs) (*zk.Conn, error) {
-	return dg.zkConn.get(func() (*zk.Conn, error) {
-		conn, _, err := zk.Connect(args.ZookeeperServers, 3*time.Second)
+func (dg *DepGraph) GetZkConn(args *cmdargs.RunArgs) (*zookeeper.Conn, error) {
+	return dg.zkConn.get(func() (*zookeeper.Conn, error) {
+		conn, err := zookeeper.NewConn(args.ZookeeperServers, 3*time.Second)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (dg *DepGraph) GetInitState(state *basic.State) (*initstate.State, error) {
 	})
 }
 
-func (dg *DepGraph) GetBasicState(conn *zk.Conn, args *cmdargs.RunArgs, l *slog.Logger) (*basic.State, error) {
+func (dg *DepGraph) GetBasicState(args *cmdargs.RunArgs, l *slog.Logger, conn *zookeeper.Conn) (*basic.State, error) {
 	return dg.basicState.get(func() (*basic.State, error) {
 		return basic.New(l, args, conn), nil
 	})

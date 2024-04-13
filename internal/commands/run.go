@@ -45,9 +45,9 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 			if err != nil {
 				return fmt.Errorf("get runner: %w", err)
 			}
-			logger.Debug("successfully connected to zookeeper")
+			logger.Debug("successfully get runner")
 
-			b, err := dg.GetBasicState(conn, &cmdArgs, logger)
+			b, err := dg.GetBasicState(&cmdArgs, logger, conn)
 			if err != nil {
 				return fmt.Errorf("get runner: %w", err)
 			}

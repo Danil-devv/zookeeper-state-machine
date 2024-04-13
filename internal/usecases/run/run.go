@@ -8,7 +8,6 @@ import (
 	"hw/internal/usecases/run/states/failover"
 	initstate "hw/internal/usecases/run/states/init"
 	"hw/internal/usecases/run/states/leader"
-	"hw/internal/usecases/run/states/number"
 	"hw/internal/usecases/run/states/stopping"
 	"log/slog"
 
@@ -58,17 +57,17 @@ func processState(ctx context.Context, state states.AutomataState, b *basic.Stat
 	}
 
 	switch n {
-	case number.INIT:
+	case basic.INIT:
 		state = initstate.New(b)
-	case number.STOPPING:
+	case basic.STOPPING:
 		state = stopping.New(b)
-	case number.FAILOVER:
+	case basic.FAILOVER:
 		state = failover.New(b)
-	case number.ATTEMPTER:
+	case basic.ATTEMPTER:
 		state = attempter.New(b)
-	case number.LEADER:
+	case basic.LEADER:
 		state = leader.New(b)
-	case number.EXIT:
+	case basic.EXIT:
 		state = nil
 	}
 

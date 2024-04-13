@@ -3,7 +3,6 @@ package stopping
 import (
 	"context"
 	"hw/internal/usecases/run/states/basic"
-	"hw/internal/usecases/run/states/number"
 	"log/slog"
 )
 
@@ -21,7 +20,7 @@ func (s *State) String() string {
 	return "StoppingState"
 }
 
-func (s *State) Run(ctx context.Context) (number.State, error) {
+func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 	s.Logger.LogAttrs(
 		ctx,
 		slog.LevelInfo,
@@ -29,5 +28,5 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 		slog.String("state", s.String()),
 	)
 	s.Conn.Close()
-	return number.EXIT, nil
+	return basic.EXIT, nil
 }

@@ -2,9 +2,7 @@ package failover
 
 import (
 	"context"
-	"github.com/go-zookeeper/zk"
 	"hw/internal/usecases/run/states/basic"
-	"hw/internal/usecases/run/states/number"
 	"log/slog"
 	"time"
 )
@@ -23,7 +21,7 @@ func (s *State) String() string {
 	return "FailoverState"
 }
 
-func (s *State) Run(ctx context.Context) (number.State, error) {
+func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 	ticker := time.NewTicker(s.Args.FailoverTimeout)
 	for i := 0; i < s.Args.FailoverAttemptsCount; i++ {
 		select {
@@ -34,7 +32,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 				"trying reconnect to zookeeper",
 				slog.String("state", s.String()),
 			)
-			conn, _, err := zk.Connect(s.Args.ZookeeperServers, 3*time.Second)
+			err := s.Conn.Reconnect(s.Args.ZookeeperServers, 3*time.Second)
 			if err != nil {
 				s.Logger.LogAttrs(
 					ctx,
@@ -51,11 +49,10 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 				"successfully reconnected to zookeeper",
 				slog.String("state", s.String()),
 			)
-			s.Conn = conn
-			return number.INIT, nil
+			return basic.INIT, nil
 		case <-ctx.Done():
-			return number.STOPPING, nil
+			return basic.STOPPING, nil
 		}
 	}
-	return number.STOPPING, nil
+	return basic.STOPPING, nil
 }

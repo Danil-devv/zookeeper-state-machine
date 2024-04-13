@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/go-zookeeper/zk"
 	"hw/internal/usecases/run/states/basic"
-	"hw/internal/usecases/run/states/number"
 	"log/slog"
 	"time"
 )
@@ -23,7 +22,7 @@ func (s *State) String() string {
 	return "AttempterState"
 }
 
-func (s *State) Run(ctx context.Context) (number.State, error) {
+func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 	ticker := time.NewTicker(s.Args.AttempterTimeout)
 	for {
 		select {
@@ -37,7 +36,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 					slog.String("errMsg", err.Error()),
 					slog.String("state", s.String()),
 				)
-				return number.FAILOVER, nil
+				return basic.FAILOVER, nil
 			}
 
 			if exists {
@@ -59,7 +58,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 					slog.String("errMsg", err.Error()),
 					slog.String("state", s.String()),
 				)
-				return number.FAILOVER, nil
+				return basic.FAILOVER, nil
 			}
 			s.Logger.LogAttrs(
 				ctx,
@@ -67,9 +66,9 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 				"successfully create ephemeral node, switching to the next state",
 				slog.String("state", s.String()),
 			)
-			return number.LEADER, nil
+			return basic.LEADER, nil
 		case <-ctx.Done():
-			return number.STOPPING, nil
+			return basic.STOPPING, nil
 		}
 	}
 }

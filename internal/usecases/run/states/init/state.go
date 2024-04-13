@@ -3,7 +3,6 @@ package init
 import (
 	"context"
 	"hw/internal/usecases/run/states/basic"
-	"hw/internal/usecases/run/states/number"
 	"log/slog"
 )
 
@@ -21,7 +20,7 @@ func (s *State) String() string {
 	return "InitState"
 }
 
-func (s *State) Run(ctx context.Context) (number.State, error) {
+func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 	if ctx.Err() != nil {
 		s.Logger.LogAttrs(
 			ctx,
@@ -30,14 +29,13 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 			slog.String("state", s.String()),
 		)
 
-		return number.STOPPING, nil
+		return basic.STOPPING, nil
 	}
-
 	s.Logger.LogAttrs(
 		ctx,
 		slog.LevelInfo,
 		"switching to the next state",
 		slog.String("state", s.String()),
 	)
-	return number.ATTEMPTER, nil
+	return basic.ATTEMPTER, nil
 }
