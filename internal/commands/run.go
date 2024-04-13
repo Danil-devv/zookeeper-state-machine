@@ -98,7 +98,7 @@ func setCmdArgs(cmd *cobra.Command, cmdArgs *cmdargs.RunArgs) {
 	)
 	cmdArgs.FileDir = *cmd.Flags().String(
 		"file-dir",
-		"/tmp",
+		"/tmp/election",
 		"Sets the directory where the leader must write files.",
 	)
 	cmdArgs.StorageCapacity = *cmd.Flags().Int(

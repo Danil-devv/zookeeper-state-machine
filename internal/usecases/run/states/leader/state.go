@@ -10,6 +10,7 @@ import (
 	"hw/internal/usecases/run/states/number"
 	"log/slog"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -87,7 +88,7 @@ func (s *State) Run(ctx context.Context) (number.State, error) {
 			}
 
 			if !exists {
-				_, err = s.Conn.Create(s.Args.FileDir, []byte("Leader file directory"), 0, zk.WorldACL(zk.PermAll))
+				err = s.createFileDir()
 				if err != nil {
 					s.Logger.LogAttrs(
 						ctx,
@@ -132,4 +133,35 @@ func (s *State) CreateRandomFile() (name string, data []byte) {
 	name = randomdata.Alphanumeric(10)
 	data = []byte(fmt.Sprintf("UUID: %s\nText: %s", s.uuid, randomdata.Paragraph()))
 	return
+}
+
+func (s *State) createFileDir() (err error) {
+	nodes := strings.Split(strings.Trim(s.Args.FileDir, "/"), "/")
+	curPath := ""
+	f := false
+	for _, node := range nodes {
+		curPath += "/" + node
+		if f {
+			_, err = s.Conn.Create(curPath, []byte{}, 0, zk.WorldACL(zk.PermAll))
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
+		exists, _, err := s.Conn.Exists(curPath)
+		if err != nil {
+			return err
+		}
+		if exists {
+			continue
+		}
+
+		f = true
+		_, err = s.Conn.Create(curPath, []byte{}, 0, zk.WorldACL(zk.PermAll))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
