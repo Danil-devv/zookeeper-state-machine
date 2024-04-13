@@ -20,38 +20,38 @@ type Config struct {
 }
 
 func GetEnvConfig() *Config {
-	err := godotenv.Load(".env")
+	err := godotenv.Load()
 	if err != nil {
 		fmt.Printf("cannot load .env file: %s\n", err.Error())
 	}
 	conf := &Config{}
 	conf.ZookeeperServers = loadStringSliceEnvVariable(
 		"ELECTION_ZK_SERVERS",
-		[]string{"zoo1:2181", "zoo2:2182", "zoo3:2183"},
+		DefaultConfigValue.ZookeeperServers,
 	)
 	conf.LeaderTimeout = loadDurationEnvVariable(
 		"ELECTION_LEADER_TIMEOUT",
-		10*time.Second,
+		DefaultConfigValue.LeaderTimeout,
 	)
 	conf.AttempterTimeout = loadDurationEnvVariable(
 		"ELECTION_ATTEMPTER_TIMEOUT",
-		2*time.Second,
+		DefaultConfigValue.AttempterTimeout,
 	)
 	conf.FailoverTimeout = loadDurationEnvVariable(
 		"ELECTION_FAILOVER_TIMEOUT",
-		1*time.Second,
+		DefaultConfigValue.FailoverTimeout,
 	)
 	conf.FileDir = loadStringEnvVariable(
 		"ELECTION_FILE_DIR",
-		"/tmp/election",
+		DefaultConfigValue.FileDir,
 	)
 	conf.StorageCapacity = loadIntEnvVariable(
 		"ELECTION_STORAGE_CAPACITY",
-		10,
+		DefaultConfigValue.StorageCapacity,
 	)
 	conf.FailoverAttemptsCount = loadIntEnvVariable(
 		"ELECTION_FAILOVER_ATTEMPTS_COUNT",
-		10,
+		DefaultConfigValue.FailoverAttemptsCount,
 	)
 	return conf
 }
