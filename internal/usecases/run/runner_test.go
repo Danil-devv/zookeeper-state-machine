@@ -3,7 +3,6 @@ package run
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"hw/internal/usecases/run/states"
 	"hw/internal/usecases/run/states/attempter"
 	"hw/internal/usecases/run/states/failover"
@@ -11,6 +10,8 @@ import (
 	"hw/internal/usecases/run/states/mocks"
 	"hw/internal/usecases/run/states/stopping"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestProcessState(t *testing.T) {
