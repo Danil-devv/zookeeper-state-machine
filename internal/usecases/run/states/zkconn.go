@@ -1,8 +1,9 @@
 package states
 
 import (
-	"github.com/go-zookeeper/zk"
 	"time"
+
+	"github.com/go-zookeeper/zk"
 )
 
 //go:generate go run github.com/vektra/mockery/v2@v2.42.2 --output=./mocks --name=ZkConn

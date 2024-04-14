@@ -3,14 +3,13 @@ package run
 import (
 	"context"
 	"fmt"
+	"hw/internal/usecases/run/states"
 	"hw/internal/usecases/run/states/attempter"
 	"hw/internal/usecases/run/states/failover"
 	initstate "hw/internal/usecases/run/states/init"
 	"hw/internal/usecases/run/states/leader"
 	"hw/internal/usecases/run/states/stopping"
 	"log/slog"
-
-	"hw/internal/usecases/run/states"
 )
 
 var _ Runner = &LoopRunner{}

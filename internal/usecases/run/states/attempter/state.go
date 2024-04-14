@@ -2,10 +2,11 @@ package attempter
 
 import (
 	"context"
-	"github.com/go-zookeeper/zk"
 	"hw/internal/usecases/run/states"
 	"log/slog"
 	"time"
+
+	"github.com/go-zookeeper/zk"
 )
 
 func New(state *states.Basic) *State {

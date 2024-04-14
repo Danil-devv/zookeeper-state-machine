@@ -3,14 +3,15 @@ package leader
 import (
 	"context"
 	"fmt"
-	"github.com/Pallinder/go-randomdata"
-	"github.com/go-zookeeper/zk"
-	"github.com/google/uuid"
 	"hw/internal/usecases/run/states"
 	"log/slog"
 	"path"
 	"strings"
 	"time"
+
+	"github.com/Pallinder/go-randomdata"
+	"github.com/go-zookeeper/zk"
+	"github.com/google/uuid"
 )
 
 func New(state *states.Basic) *State {

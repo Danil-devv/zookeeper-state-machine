@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -56,7 +57,7 @@ func GetEnvConfig() *Config {
 	return conf
 }
 
-func loadStringEnvVariable(name string, defaultValue string) string {
+func loadStringEnvVariable(name, defaultValue string) string {
 	s, exists := os.LookupEnv(name)
 	if !exists {
 		return defaultValue

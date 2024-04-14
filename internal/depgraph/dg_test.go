@@ -2,7 +2,6 @@ package depgraph
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"hw/internal/adapters/zookeeper"
 	"hw/internal/commands/cmdargs"
 	"hw/internal/usecases/run"
@@ -10,6 +9,8 @@ import (
 	initstate "hw/internal/usecases/run/states/init"
 	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNew(t *testing.T) {

@@ -3,12 +3,13 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/spf13/cobra"
 	"hw/internal/commands/cmdargs"
 	"hw/internal/config"
 	"hw/internal/depgraph"
 	"log/slog"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 func InitRunCommand(ctx context.Context) (cobra.Command, error) {
@@ -18,7 +19,7 @@ func InitRunCommand(ctx context.Context) (cobra.Command, error) {
 		Short: "Starts a leader election node",
 		Long: `This command starts the leader election node that connects to zookeeper
 		and starts to try to acquire leadership by creation of ephemeral node`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			dg := depgraph.New()
 			logger, err := dg.GetLogger()
 			if err != nil {

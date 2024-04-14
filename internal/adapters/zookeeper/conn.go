@@ -1,8 +1,9 @@
 package zookeeper
 
 import (
-	"github.com/go-zookeeper/zk"
 	"time"
+
+	"github.com/go-zookeeper/zk"
 )
 
 type Conn struct {
@@ -28,10 +29,7 @@ func (c *Conn) Reconnect(servers []string, timeout time.Duration) error {
 
 func (c *Conn) CheckConnection() bool {
 	_, _, err := c.Exists("/")
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func connect(servers []string, timeout time.Duration) (*zk.Conn, error) {

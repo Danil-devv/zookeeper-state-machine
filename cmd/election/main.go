@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
+	"hw/internal/commands"
 	"os"
 	"os/signal"
 
-	"hw/internal/commands"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
