@@ -5,7 +5,7 @@ import (
 	"hw/internal/adapters/zookeeper"
 	"hw/internal/commands/cmdargs"
 	"hw/internal/usecases/run"
-	"hw/internal/usecases/run/states/basic"
+	"hw/internal/usecases/run/states"
 	initstate "hw/internal/usecases/run/states/init"
 	"log/slog"
 	"os"
@@ -34,7 +34,7 @@ type DepGraph struct {
 	stateRunner *dgEntity[*run.LoopRunner]
 	initState   *dgEntity[*initstate.State]
 	zkConn      *dgEntity[*zookeeper.Conn]
-	basicState  *dgEntity[*basic.State]
+	basicState  *dgEntity[*states.Basic]
 }
 
 func New() *DepGraph {
@@ -43,7 +43,7 @@ func New() *DepGraph {
 		stateRunner: &dgEntity[*run.LoopRunner]{},
 		initState:   &dgEntity[*initstate.State]{},
 		zkConn:      &dgEntity[*zookeeper.Conn]{},
-		basicState:  &dgEntity[*basic.State]{},
+		basicState:  &dgEntity[*states.Basic]{},
 	}
 }
 
@@ -73,14 +73,14 @@ func (dg *DepGraph) GetZkConn(args *cmdargs.RunArgs) (*zookeeper.Conn, error) {
 	})
 }
 
-func (dg *DepGraph) GetInitState(state *basic.State) (*initstate.State, error) {
+func (dg *DepGraph) GetInitState(state *states.Basic) (*initstate.State, error) {
 	return dg.initState.get(func() (*initstate.State, error) {
 		return initstate.New(state), nil
 	})
 }
 
-func (dg *DepGraph) GetBasicState(args *cmdargs.RunArgs, l *slog.Logger, conn *zookeeper.Conn) (*basic.State, error) {
-	return dg.basicState.get(func() (*basic.State, error) {
-		return basic.New(l, args, conn), nil
+func (dg *DepGraph) GetBasicState(args *cmdargs.RunArgs, l *slog.Logger, conn *zookeeper.Conn) (*states.Basic, error) {
+	return dg.basicState.get(func() (*states.Basic, error) {
+		return states.NewBasicState(l, args, conn), nil
 	})
 }

@@ -1,4 +1,4 @@
-package basic
+package states
 
 type StateID int
 

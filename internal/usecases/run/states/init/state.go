@@ -2,25 +2,25 @@ package init
 
 import (
 	"context"
-	"hw/internal/usecases/run/states/basic"
+	"hw/internal/usecases/run/states"
 	"log/slog"
 )
 
-func New(state *basic.State) *State {
+func New(state *states.Basic) *State {
 	return &State{
-		State: state,
+		Basic: state,
 	}
 }
 
 type State struct {
-	*basic.State
+	*states.Basic
 }
 
 func (s *State) String() string {
 	return "InitState"
 }
 
-func (s *State) Run(ctx context.Context) (basic.StateID, error) {
+func (s *State) Run(ctx context.Context) (states.StateID, error) {
 	if ctx.Err() != nil {
 		s.Logger.LogAttrs(
 			ctx,
@@ -29,7 +29,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 			slog.String("state", s.String()),
 		)
 
-		return basic.STOPPING, nil
+		return states.STOPPING, nil
 	}
 	if !s.Conn.CheckConnection() {
 		s.Logger.LogAttrs(
@@ -38,7 +38,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 			"connection failed",
 			slog.String("state", s.String()),
 		)
-		return basic.FAILOVER, nil
+		return states.FAILOVER, nil
 	}
-	return basic.ATTEMPTER, nil
+	return states.ATTEMPTER, nil
 }

@@ -1,19 +1,19 @@
-package basic
+package states
 
 import (
 	"hw/internal/commands/cmdargs"
 	"log/slog"
 )
 
-func New(log *slog.Logger, args *cmdargs.RunArgs, conn ZkConn) *State {
-	return &State{
+func NewBasicState(log *slog.Logger, args *cmdargs.RunArgs, conn ZkConn) *Basic {
+	return &Basic{
 		Logger: log,
 		Conn:   conn,
 		Args:   args,
 	}
 }
 
-type State struct {
+type Basic struct {
 	Logger *slog.Logger
 	Conn   ZkConn
 	Args   *cmdargs.RunArgs

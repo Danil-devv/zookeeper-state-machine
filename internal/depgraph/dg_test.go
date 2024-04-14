@@ -6,7 +6,7 @@ import (
 	"hw/internal/adapters/zookeeper"
 	"hw/internal/commands/cmdargs"
 	"hw/internal/usecases/run"
-	"hw/internal/usecases/run/states/basic"
+	"hw/internal/usecases/run/states"
 	initstate "hw/internal/usecases/run/states/init"
 	"log/slog"
 	"testing"
@@ -17,7 +17,7 @@ func TestNew(t *testing.T) {
 	assert.Equal(t, dg.logger, &dgEntity[*slog.Logger]{})
 	assert.Equal(t, dg.stateRunner, &dgEntity[*run.LoopRunner]{})
 	assert.Equal(t, dg.initState, &dgEntity[*initstate.State]{})
-	assert.Equal(t, dg.basicState, &dgEntity[*basic.State]{})
+	assert.Equal(t, dg.basicState, &dgEntity[*states.Basic]{})
 	assert.Equal(t, dg.zkConn, &dgEntity[*zookeeper.Conn]{})
 
 	assert.NoError(t, dg.logger.initErr)
@@ -197,7 +197,7 @@ func TestDepGraph_GetZkConn_Wrong(t *testing.T) {
 
 func TestDepGraph_GetInitState(t *testing.T) {
 	dg := New()
-	b := &basic.State{}
+	b := &states.Basic{}
 	state, err := dg.GetInitState(b)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, state)

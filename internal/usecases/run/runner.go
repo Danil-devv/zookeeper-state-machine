@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"hw/internal/usecases/run/states/attempter"
-	"hw/internal/usecases/run/states/basic"
 	"hw/internal/usecases/run/states/failover"
 	initstate "hw/internal/usecases/run/states/init"
 	"hw/internal/usecases/run/states/leader"
@@ -17,7 +16,7 @@ import (
 var _ Runner = &LoopRunner{}
 
 type Runner interface {
-	Run(ctx context.Context, state states.AutomataState, b *basic.State) error
+	Run(ctx context.Context, state states.AutomataState, b *states.Basic) error
 }
 
 func NewLoopRunner(logger *slog.Logger) *LoopRunner {
@@ -31,7 +30,7 @@ type LoopRunner struct {
 	logger *slog.Logger
 }
 
-func (r *LoopRunner) Run(ctx context.Context, state states.AutomataState, b *basic.State) error {
+func (r *LoopRunner) Run(ctx context.Context, state states.AutomataState, b *states.Basic) error {
 	for state != nil {
 		r.logger.LogAttrs(
 			ctx,
@@ -50,24 +49,24 @@ func (r *LoopRunner) Run(ctx context.Context, state states.AutomataState, b *bas
 	return nil
 }
 
-func processState(ctx context.Context, state states.AutomataState, b *basic.State) (states.AutomataState, error) {
+func processState(ctx context.Context, state states.AutomataState, b *states.Basic) (states.AutomataState, error) {
 	n, err := state.Run(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	switch n {
-	case basic.INIT:
+	case states.INIT:
 		state = initstate.New(b)
-	case basic.STOPPING:
+	case states.STOPPING:
 		state = stopping.New(b)
-	case basic.FAILOVER:
+	case states.FAILOVER:
 		state = failover.New(b)
-	case basic.ATTEMPTER:
+	case states.ATTEMPTER:
 		state = attempter.New(b)
-	case basic.LEADER:
+	case states.LEADER:
 		state = leader.New(b)
-	case basic.EXIT:
+	case states.EXIT:
 		state = nil
 	}
 

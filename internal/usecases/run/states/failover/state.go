@@ -2,26 +2,26 @@ package failover
 
 import (
 	"context"
-	"hw/internal/usecases/run/states/basic"
+	"hw/internal/usecases/run/states"
 	"log/slog"
 	"time"
 )
 
-func New(state *basic.State) *State {
+func New(state *states.Basic) *State {
 	return &State{
-		State: state,
+		Basic: state,
 	}
 }
 
 type State struct {
-	*basic.State
+	*states.Basic
 }
 
 func (s *State) String() string {
 	return "FailoverState"
 }
 
-func (s *State) Run(ctx context.Context) (basic.StateID, error) {
+func (s *State) Run(ctx context.Context) (states.StateID, error) {
 	ticker := time.NewTicker(s.Args.FailoverTimeout)
 	for i := 0; i < s.Args.FailoverAttemptsCount; i++ {
 		select {
@@ -49,10 +49,10 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 				"successfully reconnected to zookeeper",
 				slog.String("state", s.String()),
 			)
-			return basic.INIT, nil
+			return states.INIT, nil
 		case <-ctx.Done():
-			return basic.STOPPING, nil
+			return states.STOPPING, nil
 		}
 	}
-	return basic.STOPPING, nil
+	return states.STOPPING, nil
 }

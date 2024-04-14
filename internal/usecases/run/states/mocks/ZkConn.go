@@ -3,9 +3,9 @@
 package mocks
 
 import (
-	time "time"
-
 	mock "github.com/stretchr/testify/mock"
+
+	time "time"
 
 	zk "github.com/go-zookeeper/zk"
 )

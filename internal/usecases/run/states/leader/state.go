@@ -6,22 +6,22 @@ import (
 	"github.com/Pallinder/go-randomdata"
 	"github.com/go-zookeeper/zk"
 	"github.com/google/uuid"
-	"hw/internal/usecases/run/states/basic"
+	"hw/internal/usecases/run/states"
 	"log/slog"
 	"path"
 	"strings"
 	"time"
 )
 
-func New(state *basic.State) *State {
+func New(state *states.Basic) *State {
 	return &State{
-		State: state,
+		Basic: state,
 		uuid:  uuid.NewString(),
 	}
 }
 
 type State struct {
-	*basic.State
+	*states.Basic
 	uuid string
 }
 
@@ -29,7 +29,7 @@ func (s *State) String() string {
 	return "LeaderState"
 }
 
-func (s *State) Run(ctx context.Context) (basic.StateID, error) {
+func (s *State) Run(ctx context.Context) (states.StateID, error) {
 	s.Logger.LogAttrs(
 		ctx,
 		slog.LevelInfo,
@@ -49,7 +49,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 					slog.String("errMsg", err.Error()),
 					slog.String("state", s.String()),
 				)
-				return basic.FAILOVER, nil
+				return states.FAILOVER, nil
 			}
 
 			// TODO: удаляется рандомный ребенок, а не самый старый
@@ -69,7 +69,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 						slog.String("errMsg", err.Error()),
 						slog.String("state", s.String()),
 					)
-					return basic.FAILOVER, nil
+					return states.FAILOVER, nil
 				}
 				for i := 0; len(childrens)-i >= s.Args.StorageCapacity; i++ {
 					err = s.Conn.Delete(path.Join(s.Args.FileDir, childrens[i]), stat.Version)
@@ -81,7 +81,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 							slog.String("errMsg", err.Error()),
 							slog.String("state", s.String()),
 						)
-						return basic.FAILOVER, nil
+						return states.FAILOVER, nil
 					}
 				}
 			}
@@ -96,7 +96,7 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 						slog.String("errMsg", err.Error()),
 						slog.String("state", s.String()),
 					)
-					return basic.FAILOVER, nil
+					return states.FAILOVER, nil
 				}
 			}
 
@@ -119,11 +119,11 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 					slog.String("errMsg", err.Error()),
 					slog.String("state", s.String()),
 				)
-				return basic.FAILOVER, nil
+				return states.FAILOVER, nil
 			}
 
 		case <-ctx.Done():
-			return basic.STOPPING, nil
+			return states.STOPPING, nil
 		}
 	}
 }

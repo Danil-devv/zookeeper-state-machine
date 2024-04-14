@@ -2,25 +2,25 @@ package stopping
 
 import (
 	"context"
-	"hw/internal/usecases/run/states/basic"
+	"hw/internal/usecases/run/states"
 	"log/slog"
 )
 
-func New(state *basic.State) *State {
+func New(state *states.Basic) *State {
 	return &State{
-		State: state,
+		Basic: state,
 	}
 }
 
 type State struct {
-	*basic.State
+	*states.Basic
 }
 
 func (s *State) String() string {
 	return "StoppingState"
 }
 
-func (s *State) Run(ctx context.Context) (basic.StateID, error) {
+func (s *State) Run(ctx context.Context) (states.StateID, error) {
 	s.Logger.LogAttrs(
 		ctx,
 		slog.LevelInfo,
@@ -28,5 +28,5 @@ func (s *State) Run(ctx context.Context) (basic.StateID, error) {
 		slog.String("state", s.String()),
 	)
 	s.Conn.Close()
-	return basic.EXIT, nil
+	return states.EXIT, nil
 }
